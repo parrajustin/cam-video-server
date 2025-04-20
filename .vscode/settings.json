@@ -1,0 +1,8 @@
+{
+    "editor.codeActionsOnSave": {},
+    "deno.enable": false,
+    "deno.lint": false,
+    "editor.formatOnSave": true,
+    "IDX.aI.enableInlineCompletion": true,
+    "IDX.aI.enableCodebaseIndexing": true
+}
