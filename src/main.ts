@@ -2,6 +2,7 @@ import { StatusError } from "lib/status_error";
 import { Ok, Result } from "lib/result";
 import { CameraData, GetCameras } from "utils/read_cameras";
 import { createLogger, format, transports } from "winston";
+import cors from "cors";
 import express from "express";
 // import Fastify from "fastify";
 // import fastifyStatic from "@fastify/static";
@@ -39,6 +40,8 @@ async function GetCameraData(): Promise<Result<Record<string, CameraData>, Statu
 }
 
 const app = express();
+
+app.use(cors());
 
 app.use((req, _res, next) => {
     logger.info(`- ${req.method} ${req.url}`);
