@@ -2,8 +2,9 @@ import { StatusError } from "lib/status_error";
 import { Ok, Result } from "lib/result";
 import { CameraData, GetCameras } from "utils/read_cameras";
 import { createLogger, format, transports } from "winston";
-import Fastify from "fastify";
-import fastifyStatic from "@fastify/static";
+import express from "express";
+// import Fastify from "fastify";
+// import fastifyStatic from "@fastify/static";
 
 const myFormat = format.printf(({ level, message, timestamp }) => {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -24,7 +25,7 @@ const logger = createLogger({
 });
 
 const videoPath = process.env.DATA_PATH ?? "/data";
-const videoPathPrefix = process.env.DATA_PATH ?? "data";
+const videoPathPrefix = process.env.DATA_PATH_PREFIX ?? "data";
 const serverPort = Number.parseInt(process.env.SERVER_PORT ?? "8080");
 const camNames = (process.env.CAMERA_NAMES ?? "").split(",");
 
@@ -36,31 +37,34 @@ async function GetCameraData(): Promise<Result<Record<string, CameraData>, Statu
 
     return Ok(camReturnData.val.data);
 }
-const fastify = Fastify({
-    logger: true
+
+const app = express();
+
+app.use((req, _res, next) => {
+    logger.info(`- ${req.method} ${req.url}`);
+    next();
 });
 
-fastify.register(fastifyStatic, {
-    root: videoPath,
-    prefix: `/${videoPathPrefix}/` // optional: default '/'
+app.use(`/${videoPathPrefix}`, express.static(videoPath));
+
+app.get("/", (_req, res) => {
+    res.send("Hello World");
 });
 
-fastify.get("/cams", async (_request, reply) => {
-    reply.type("application/json");
+app.get("/cams", async (_req, res, _next): Promise<void> => {
+    res.type("application/json");
 
     const camData = await GetCameraData();
     if (camData.err) {
         logger.error("Failed to get camera data: " + camData.err);
-        reply.status(500);
-        return { success: false, message: camData.val.toString() };
+        res.status(500).send({ success: false, message: camData.val.toString() });
+        return;
     }
 
-    reply.status(200);
-    return { success: true, message: camData.val };
+    res.status(200).send({ success: true, message: camData.val });
 });
 
-// Run the server!
-fastify.listen({ port: serverPort }, (err) => {
+app.listen(serverPort, (err) => {
     if (err) throw err;
-    // Server is now listening on ${address}
+    logger.info(`Server is listening on port ${serverPort}`);
 });
