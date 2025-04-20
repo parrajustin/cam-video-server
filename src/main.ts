@@ -25,6 +25,7 @@ const logger = createLogger({
     ]
 });
 
+const staticPath = process.env.STATIC_PATH ?? "/static";
 const videoPath = process.env.DATA_PATH ?? "/data";
 const videoPathPrefix = process.env.DATA_PATH_PREFIX ?? "data";
 const serverPort = Number.parseInt(process.env.SERVER_PORT ?? "8080");
@@ -48,6 +49,7 @@ app.use((req, _res, next) => {
     next();
 });
 
+app.use(`/static`, express.static(staticPath));
 app.use(`/${videoPathPrefix}`, express.static(videoPath));
 
 app.get("/", (_req, res) => {

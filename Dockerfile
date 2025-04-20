@@ -13,9 +13,11 @@ RUN npm run build
 FROM gcr.io/distroless/nodejs22-debian12
 COPY --from=build-env /app/dist /app
 
+WORKDIR /static
 WORKDIR /data
 WORKDIR /app
 
+ENV STATIC_PATH="/static"
 ENV DATA_PATH="/data"
 ENV DATA_PATH_PREFIX="data"
 ENV SERVER_PORT=8080
