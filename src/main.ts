@@ -50,7 +50,18 @@ app.use((req, _res, next) => {
     next();
 });
 
-app.use(`/static`, express.static(staticPath));
+app.use(
+    `/static`,
+    express.static(staticPath, {
+        setHeaders: (res, path, _stat) => {
+            switch (extname(path)) {
+                case ".css":
+                    res.setHeader("Content-Type", "text/css");
+                    break;
+            }
+        }
+    })
+);
 app.use(
     `/${videoPathPrefix}`,
     express.static(videoPath, {
@@ -66,6 +77,10 @@ app.use(
 
 app.get("/", (_req, res) => {
     res.send("Hello World");
+});
+
+app.get("/019656a2-ef1d-710c-8946-0396075162c2", (_req, res) => {
+    res.send({ success: true, message: "019656a2-ef1d-710c-8946-0396075162c2" });
 });
 
 app.get("/cams", async (_req, res, _next): Promise<void> => {
