@@ -4,6 +4,7 @@ import { CameraData, GetCameras } from "utils/read_cameras";
 import { createLogger, format, transports } from "winston";
 import cors from "cors";
 import express from "express";
+import { extname } from "path";
 // import Fastify from "fastify";
 // import fastifyStatic from "@fastify/static";
 
@@ -45,12 +46,23 @@ const app = express();
 app.use(cors());
 
 app.use((req, _res, next) => {
-    logger.info(`- ${req.method} ${req.url}`);
+    logger.info(`- [${req.method}] ${req.url}`);
     next();
 });
 
 app.use(`/static`, express.static(staticPath));
-app.use(`/${videoPathPrefix}`, express.static(videoPath));
+app.use(
+    `/${videoPathPrefix}`,
+    express.static(videoPath, {
+        setHeaders: (res, path, _stat) => {
+            switch (extname(path)) {
+                case ".mp4":
+                    res.setHeader("Content-Type", "video/mp4");
+                    break;
+            }
+        }
+    })
+);
 
 app.get("/", (_req, res) => {
     res.send("Hello World");
